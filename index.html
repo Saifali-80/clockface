@@ -1,0 +1,2645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Clockface Pro | Live Digital Clock</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=JetBrains+Mono:wght@100..800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #ffffff;
+            --surface: rgba(0, 0, 0, 0.02);
+            --glass: rgba(0, 0, 0, 0.03);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --glass-hover: rgba(0, 0, 0, 0.08);
+            --text: #1a1a2e;
+            --text-secondary: rgba(26, 26, 46, 0.6);
+            --text-tertiary: rgba(26, 26, 46, 0.35);
+            --accent: #7c3aed;
+            --accent2: #0ea5e9;
+            --accent3: #10b981;
+            --danger: rgba(220, 38, 38, 0.85);
+            --success: rgba(16, 185, 129, 0.9);
+            --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 8px 40px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.15);
+            --radius-sm: 12px;
+            --radius-md: 18px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+            --radius-round: 40px;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-sans: 'Inter', system-ui, sans-serif;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text);
+            transition: background 0.5s ease;
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
+            border-right: 1px solid var(--glass-border);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 10;
+            box-shadow: 4px 0 60px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--glass-border);
+            flex-shrink: 0;
+        }
+
+        .logo h2 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #1a1a2e 30%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, #7c3aed, #0ea5e9);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+        }
+
+        .nav-menu::-webkit-scrollbar {
+            width: 4px;
+        }
+        .nav-menu::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.12);
+            border-radius: 10px;
+        }
+
+        .nav-item {
+            background: transparent;
+            border: none;
+            padding: 11px 14px;
+            text-align: left;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+
+        .nav-item:hover {
+            background: rgba(124, 58, 237, 0.07);
+            color: var(--text);
+            transform: translateX(2px);
+        }
+
+        .nav-item.active {
+            background: rgba(124, 58, 237, 0.11);
+            border: 1px solid rgba(124, 58, 237, 0.18);
+            color: var(--accent);
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.06);
+        }
+
+        .sidebar-footer {
+            padding-top: 14px;
+            border-top: 1px solid var(--glass-border);
+            flex-shrink: 0;
+        }
+
+        .customize-btn {
+            width: 100%;
+            background: rgba(124, 58, 237, 0.07);
+            border: 1px solid rgba(124, 58, 237, 0.18);
+            padding: 11px;
+            border-radius: 40px;
+            color: var(--text);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+        }
+
+        .customize-btn:hover {
+            background: rgba(124, 58, 237, 0.14);
+            box-shadow: 0 0 30px rgba(124, 58, 237, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+            min-height: 100vh;
+            scrollbar-width: thin;
+        }
+        .main-content::-webkit-scrollbar {
+            width: 5px;
+        }
+        .main-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.12);
+            border-radius: 10px;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.35s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .section-header h2 {
+            font-size: 26px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 0.3px;
+        }
+
+        .clock-container {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(0, 0, 0, 0.015);
+            border-radius: 32px;
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .digital-clock {
+            font-family: var(--font-mono);
+            font-size: 64px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 4px;
+            margin-bottom: 12px;
+            transition: font-size 0.3s ease;
+        }
+
+        .date-display {
+            font-size: 17px;
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+            font-weight: 500;
+        }
+
+        .clock-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .ctrl-btn {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 10px 18px;
+            border-radius: 40px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(20px);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(124, 58, 237, 0.07);
+            border-color: rgba(124, 58, 237, 0.22);
+            transform: translateY(-1px);
+        }
+
+        .world-search {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .tz-select {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 10px 14px;
+            border-radius: 40px;
+            color: var(--text);
+            font-size: 13px;
+            min-width: 180px;
+            backdrop-filter: blur(20px);
+            cursor: pointer;
+        }
+
+        .tz-select option {
+            background: #fff;
+            color: #1a1a2e;
+        }
+
+        .add-btn {
+            background: rgba(124, 58, 237, 0.09);
+            border: 1px solid rgba(124, 58, 237, 0.22);
+            padding: 10px 18px;
+            border-radius: 40px;
+            color: var(--accent);
+            cursor: pointer;
+            backdrop-filter: blur(20px);
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+        .add-btn:hover {
+            background: rgba(124, 58, 237, 0.16);
+            transform: translateY(-1px);
+        }
+
+        .world-clocks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .world-clock-card {
+            background: var(--surface);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 22px;
+            padding: 18px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+            transition: all 0.25s ease;
+        }
+
+        .world-clock-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(124, 58, 237, 0.22);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        .world-city {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .world-time {
+            font-family: var(--font-mono);
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .remove-city {
+            background: rgba(220, 38, 38, 0.07);
+            border: 1px solid rgba(220, 38, 38, 0.18);
+            padding: 5px 12px;
+            border-radius: 20px;
+            color: var(--danger);
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        .remove-city:hover {
+            background: rgba(220, 38, 38, 0.14);
+        }
+
+        .stopwatch-display,
+        .timer-display {
+            font-family: var(--font-mono);
+            font-size: 60px;
+            font-weight: 700;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.015);
+            padding: 40px;
+            border-radius: 32px;
+            color: var(--text);
+            margin-bottom: 22px;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            letter-spacing: 3px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 18px 0;
+        }
+
+        .btn {
+            padding: 11px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid var(--glass-border);
+            background: var(--glass);
+            color: var(--text);
+            backdrop-filter: blur(20px);
+            font-size: 13.5px;
+            letter-spacing: 0.3px;
+        }
+
+        .btn.primary {
+            background: rgba(124, 58, 237, 0.1);
+            border-color: rgba(124, 58, 237, 0.22);
+            color: var(--accent);
+        }
+        .btn.warning {
+            background: rgba(245, 158, 11, 0.07);
+            border-color: rgba(245, 158, 11, 0.18);
+        }
+        .btn.accent {
+            background: rgba(14, 165, 233, 0.07);
+            border-color: rgba(14, 165, 233, 0.18);
+        }
+        .btn:hover {
+            transform: scale(0.97);
+            opacity: 0.85;
+        }
+        .btn:active {
+            transform: scale(0.94);
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .timer-input {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 10px;
+            border-radius: 18px;
+            color: var(--text);
+            font-size: 18px;
+            width: 90px;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            font-family: var(--font-mono);
+        }
+
+        .presets {
+            display: flex;
+            gap: 7px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .preset-btn {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 6px 14px;
+            border-radius: 30px;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 12.5px;
+            transition: all 0.2s ease;
+        }
+        .preset-btn:hover {
+            background: rgba(124, 58, 237, 0.07);
+            border-color: rgba(124, 58, 237, 0.2);
+        }
+
+        .laps-container {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 14px;
+            scrollbar-width: thin;
+        }
+
+        .lap-item {
+            background: var(--glass);
+            padding: 9px 14px;
+            margin: 5px 0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            color: var(--text);
+            border: 1px solid var(--glass-border);
+            font-family: var(--font-mono);
+            font-size: 13px;
+        }
+
+        .alarm-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .alarm-input,
+        .alarm-select {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 11px 14px;
+            border-radius: 40px;
+            color: var(--text);
+            backdrop-filter: blur(20px);
+            font-size: 13px;
+        }
+
+        .alarms-container {
+            max-height: 300px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .alarm-item {
+            background: var(--surface);
+            padding: 11px 14px;
+            margin: 7px 0;
+            border-radius: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--glass-border);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .alarm-time {
+            font-family: var(--font-mono);
+            font-size: 19px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .alarm-sound {
+            background: var(--glass);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .delete-alarm {
+            background: rgba(220, 38, 38, 0.07);
+            border: 1px solid rgba(220, 38, 38, 0.18);
+            padding: 5px 11px;
+            border-radius: 20px;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+        .delete-alarm:hover {
+            background: rgba(220, 38, 38, 0.14);
+        }
+
+        .weather-search {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+        }
+
+        .weather-input {
+            flex: 1;
+            min-width: 180px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 11px 14px;
+            border-radius: 40px;
+            color: var(--text);
+            backdrop-filter: blur(20px);
+            font-size: 14px;
+        }
+
+        .weather-card {
+            background: var(--surface);
+            border-radius: 22px;
+            padding: 22px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .weather-placeholder {
+            color: var(--text-tertiary);
+            font-size: 15px;
+            padding: 30px;
+        }
+
+        .weather-temp {
+            font-size: 46px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .weather-condition {
+            font-size: 17px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .music-player {
+            background: var(--surface);
+            border-radius: 22px;
+            padding: 22px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+        }
+
+        .music-info {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+        .music-info span {
+            display: block;
+        }
+        .music-info :first-child {
+            font-size: 19px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .music-info :last-child {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .music-controls {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+        }
+
+        .music-btn {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 10px 16px;
+            border-radius: 40px;
+            color: var(--text);
+            cursor: pointer;
+            backdrop-filter: blur(20px);
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+        .music-btn.play {
+            background: rgba(124, 58, 237, 0.1);
+            padding: 12px 22px;
+            font-size: 18px;
+        }
+        .music-btn:hover {
+            background: rgba(124, 58, 237, 0.08);
+        }
+
+        .volume-slider {
+            width: 90px;
+            accent-color: #7c3aed;
+            cursor: pointer;
+        }
+
+        .playlist {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .playlist-item {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 7px 14px;
+            border-radius: 30px;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 12.5px;
+            transition: all 0.2s ease;
+        }
+        .playlist-item:hover {
+            background: rgba(124, 58, 237, 0.07);
+            border-color: rgba(124, 58, 237, 0.2);
+        }
+
+        .ambient-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .ambient-card {
+            background: var(--surface);
+            border-radius: 22px;
+            padding: 18px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            transition: all 0.25s ease;
+        }
+        .ambient-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+        }
+        .ambient-card span:first-child {
+            font-size: 38px;
+        }
+
+        .ambient-play {
+            background: rgba(124, 58, 237, 0.1);
+            border: 1px solid rgba(124, 58, 237, 0.22);
+            padding: 7px;
+            border-radius: 30px;
+            color: var(--accent);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            font-size: 13px;
+        }
+        .ambient-play:hover {
+            background: rgba(124, 58, 237, 0.17);
+        }
+
+        .ambient-status {
+            text-align: center;
+            color: var(--text-tertiary);
+            padding: 10px;
+            font-size: 13px;
+        }
+
+        .focus-container {
+            background: var(--surface);
+            border-radius: 22px;
+            padding: 22px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+        }
+
+        .focus-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 22px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--glass-border);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .focus-tree-count,
+        .focus-total-time {
+            font-size: 14px;
+            color: var(--text);
+        }
+        .focus-tree-count span:nth-child(2) {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .focus-timer {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .focus-input {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 10px;
+            border-radius: 18px;
+            color: var(--text);
+            width: 90px;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            font-family: var(--font-mono);
+            font-size: 16px;
+        }
+
+        .focus-progress {
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 20px;
+            height: 8px;
+            overflow: hidden;
+            margin: 18px 0;
+        }
+
+        .focus-progress-bar {
+            background: linear-gradient(90deg, #7c3aed, #0ea5e9);
+            width: 0%;
+            height: 100%;
+            transition: width 0.4s ease;
+            border-radius: 20px;
+        }
+
+        .focus-message {
+            text-align: center;
+            color: var(--success);
+            font-weight: 500;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        .notes-header,
+        .checklist-header,
+        .countdown-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+        }
+
+        .note-input,
+        .task-input,
+        .countdown-input,
+        .countdown-date {
+            flex: 1;
+            min-width: 150px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 11px 14px;
+            border-radius: 40px;
+            color: var(--text);
+            backdrop-filter: blur(20px);
+            font-size: 14px;
+        }
+
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 14px;
+        }
+
+        .note-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 14px;
+            position: relative;
+            border: 1px solid var(--glass-border);
+            transition: all 0.2s ease;
+        }
+        .note-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+        }
+
+        .note-text {
+            color: var(--text);
+            margin-bottom: 10px;
+            word-break: break-word;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .delete-note {
+            background: rgba(220, 38, 38, 0.07);
+            border: 1px solid rgba(220, 38, 38, 0.18);
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+        .delete-note:hover {
+            background: rgba(220, 38, 38, 0.14);
+        }
+
+        .tasks-list {
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .task-item {
+            background: var(--surface);
+            padding: 11px 14px;
+            margin: 7px 0;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--glass-border);
+            flex-wrap: wrap;
+        }
+
+        .task-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #7c3aed;
+            flex-shrink: 0;
+        }
+
+        .task-text {
+            flex: 1;
+            color: var(--text);
+            font-size: 14px;
+        }
+        .task-text.completed {
+            text-decoration: line-through;
+            opacity: 0.55;
+        }
+
+        .delete-task {
+            background: rgba(220, 38, 38, 0.07);
+            border: 1px solid rgba(220, 38, 38, 0.18);
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+        .delete-task:hover {
+            background: rgba(220, 38, 38, 0.14);
+        }
+
+        .challenge-card {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 22px;
+            margin-bottom: 18px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.25s ease;
+        }
+        .challenge-card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+        .challenge-card h3 {
+            color: var(--text);
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .challenge-card p {
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .quiz-options {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .quiz-option {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 7px 14px;
+            border-radius: 30px;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+        .quiz-option:hover {
+            background: rgba(124, 58, 237, 0.07);
+            border-color: rgba(124, 58, 237, 0.2);
+        }
+
+        .quiz-feedback {
+            margin-top: 10px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .countdowns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 14px;
+        }
+
+        .countdown-card {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 18px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+            transition: all 0.25s ease;
+        }
+        .countdown-card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .countdown-name {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .countdown-timer {
+            font-family: var(--font-mono);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent2);
+            margin-bottom: 10px;
+        }
+
+        .delete-countdown {
+            background: rgba(220, 38, 38, 0.07);
+            border: 1px solid rgba(220, 38, 38, 0.18);
+            padding: 5px 11px;
+            border-radius: 20px;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+        .delete-countdown:hover {
+            background: rgba(220, 38, 38, 0.14);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 22px;
+            width: 90%;
+            max-width: 480px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            scrollbar-width: thin;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            background: #fff;
+            border-radius: 22px 22px 0 0;
+            z-index: 1;
+        }
+
+        .modal-header h3 {
+            color: var(--text);
+            font-size: 18px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 26px;
+            color: var(--text);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .modal-body {
+            padding: 22px;
+        }
+
+        .customize-section {
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .customize-section label {
+            color: var(--text);
+            width: 110px;
+            font-size: 13px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .btn-small {
+            background: rgba(124, 58, 237, 0.1);
+            border: 1px solid rgba(124, 58, 237, 0.22);
+            padding: 7px 14px;
+            border-radius: 30px;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .btn-small:hover {
+            background: rgba(124, 58, 237, 0.16);
+        }
+
+        .custom-input,
+        .custom-select {
+            flex: 1;
+            min-width: 120px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 9px 12px;
+            border-radius: 20px;
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1a1a2e;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 3000;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 14px;
+                flex-shrink: 0;
+            }
+            .nav-menu {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+            .nav-item {
+                font-size: 11px;
+                padding: 8px 10px;
+                border-radius: 8px;
+            }
+            .main-content {
+                padding: 18px;
+            }
+            .digital-clock,
+            .stopwatch-display,
+            .timer-display {
+                font-size: 38px;
+                padding: 28px 16px;
+            }
+            .clock-container {
+                padding: 30px 14px;
+            }
+            .section-header h2 {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .digital-clock,
+            .stopwatch-display,
+            .timer-display {
+                font-size: 28px;
+                letter-spacing: 2px;
+            }
+            .sidebar {
+                padding: 10px;
+            }
+            .nav-item {
+                font-size: 10px;
+                padding: 6px 8px;
+            }
+            .main-content {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>◈ CLOCKFACE</h2>
+                <span class="badge">PRO</span>
+            </div>
+            <nav class="nav-menu" id="navMenu">
+                <button class="nav-item active" data-section="clock">🕐 Clock</button>
+                <button class="nav-item" data-section="worldclock">🌍 World Clock</button>
+                <button class="nav-item" data-section="stopwatch">⏱️ Stopwatch</button>
+                <button class="nav-item" data-section="timer">⏲️ Timer</button>
+                <button class="nav-item" data-section="alarm">⏰ Alarm</button>
+                <button class="nav-item" data-section="weather">🌦️ Weather</button>
+                <button class="nav-item" data-section="music">🎵 Music</button>
+                <button class="nav-item" data-section="ambient">🎧 Ambient</button>
+                <button class="nav-item" data-section="focus">🧘 Focus</button>
+                <button class="nav-item" data-section="notes">📝 Sticky Notes</button>
+                <button class="nav-item" data-section="checklist">✅ Checklist</button>
+                <button class="nav-item" data-section="challenges">🏆 Challenges</button>
+                <button class="nav-item" data-section="countdowns">⏳ Countdowns</button>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="customizeBtn" class="customize-btn">🎨 Customize</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Clock Section -->
+            <section id="clock-section" class="section active">
+                <div class="clock-container">
+                    <div class="digital-clock" id="digitalClock">--:--:--</div>
+                    <div class="date-display" id="dateDisplay"></div>
+                    <div class="clock-controls">
+                        <button id="toggleSeconds" class="ctrl-btn">Hide Seconds</button>
+                        <button id="toggleFormat" class="ctrl-btn">Switch to 12H</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- World Clock Section -->
+            <section id="worldclock-section" class="section">
+                <div class="section-header">
+                    <h2>🌍 World Clock</h2>
+                    <div class="world-search">
+                        <select id="timezoneSelect" class="tz-select"></select>
+                        <button id="addTimezoneBtn" class="add-btn">+ Add</button>
+                    </div>
+                </div>
+                <div id="worldClocksList" class="world-clocks-grid"></div>
+            </section>
+
+            <!-- Stopwatch Section -->
+            <section id="stopwatch-section" class="section">
+                <div class="stopwatch-display" id="stopwatchDisplay">00:00:00</div>
+                <div class="button-group">
+                    <button id="swStart" class="btn primary">▶ Start</button>
+                    <button id="swPause" class="btn warning">⏸ Pause</button>
+                    <button id="swReset" class="btn">⟳ Reset</button>
+                    <button id="swLap" class="btn accent">⏱️ Lap</button>
+                </div>
+                <div id="lapsList" class="laps-container"></div>
+            </section>
+
+            <!-- Timer Section -->
+            <section id="timer-section" class="section">
+                <div class="timer-display" id="timerDisplay">25:00</div>
+                <div class="timer-controls">
+                    <input type="number" id="timerMinutes" placeholder="Min" value="25" class="timer-input" min="0" max="999">
+                    <span>:</span>
+                    <input type="number" id="timerSeconds" placeholder="Sec" value="0" class="timer-input" min="0" max="59">
+                </div>
+                <div class="button-group">
+                    <button id="timerStart" class="btn primary">▶ Start</button>
+                    <button id="timerPause" class="btn warning">⏸ Pause</button>
+                    <button id="timerReset" class="btn">⟳ Reset</button>
+                </div>
+                <div class="presets">
+                    <button class="preset-btn" data-min="1">1 min</button>
+                    <button class="preset-btn" data-min="5">5 min</button>
+                    <button class="preset-btn" data-min="25">25 min</button>
+                    <button class="preset-btn" data-min="60">1 hour</button>
+                </div>
+            </section>
+
+            <!-- Alarm Section -->
+            <section id="alarm-section" class="section">
+                <div class="alarm-controls">
+                    <input type="time" id="alarmTime" class="alarm-input" value="07:00">
+                    <select id="alarmSound" class="alarm-select">
+                        <option value="bell">🔔 Bell</option>
+                        <option value="chime">🎵 Chime</option>
+                        <option value="alert">⚠️ Alert</option>
+                    </select>
+                    <button id="setAlarmBtn" class="btn primary">Set Alarm</button>
+                </div>
+                <div id="alarmsList" class="alarms-container"></div>
+            </section>
+
+            <!-- Weather Section -->
+            <section id="weather-section" class="section">
+                <div class="weather-search">
+                    <input type="text" id="weatherCity" placeholder="Enter city name..." class="weather-input">
+                    <button id="getWeatherBtn" class="btn primary">Get Weather</button>
+                </div>
+                <div id="weatherInfo" class="weather-card">
+                    <div class="weather-placeholder">🌍 Search for a city to see weather</div>
+                </div>
+            </section>
+
+            <!-- Music Section -->
+            <section id="music-section" class="section">
+                <div class="music-player">
+                    <div class="music-info">
+                        <span id="currentTrack">Lofi Beats</span>
+                        <span id="trackArtist">Chillhop Music</span>
+                    </div>
+                    <div class="music-controls">
+                        <button id="prevTrack" class="music-btn">⏮️</button>
+                        <button id="playPauseMusic" class="music-btn play">▶</button>
+                        <button id="nextTrack" class="music-btn">⏭️</button>
+                        <input type="range" id="musicVolume" min="0" max="100" value="50" class="volume-slider" title="Volume">
+                    </div>
+                    <div class="playlist">
+                        <button class="playlist-item" data-track="0">🎵 Lofi Beats</button>
+                        <button class="playlist-item" data-track="1">🎹 Classical Piano</button>
+                        <button class="playlist-item" data-track="2">🎸 Jazz Cafe</button>
+                        <button class="playlist-item" data-track="3">🌿 Nature Sounds</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Ambient Section -->
+            <section id="ambient-section" class="section">
+                <div class="ambient-grid">
+                    <div class="ambient-card" data-sound="rain">
+                        <span>🌧️</span><span>Rain</span>
+                        <button class="ambient-play">Play</button>
+                    </div>
+                    <div class="ambient-card" data-sound="fire">
+                        <span>🔥</span><span>Fire</span>
+                        <button class="ambient-play">Play</button>
+                    </div>
+                    <div class="ambient-card" data-sound="waves">
+                        <span>🌊</span><span>Waves</span>
+                        <button class="ambient-play">Play</button>
+                    </div>
+                    <div class="ambient-card" data-sound="wind">
+                        <span>💨</span><span>Wind</span>
+                        <button class="ambient-play">Play</button>
+                    </div>
+                </div>
+                <div id="ambientStatus" class="ambient-status">No ambient sound playing</div>
+            </section>
+
+            <!-- Focus Section -->
+            <section id="focus-section" class="section">
+                <div class="focus-container">
+                    <div class="focus-stats">
+                        <div class="focus-tree-count">
+                            <span>🌲</span>
+                            <span id="treeCount">0</span>
+                            <span>trees grown</span>
+                        </div>
+                        <div class="focus-total-time">
+                            <span>Total focus: <span id="totalFocusMins">0</span> mins</span>
+                        </div>
+                    </div>
+                    <div class="focus-timer">
+                        <input type="number" id="focusMinutes" value="25" class="focus-input" min="1" max="480">
+                        <span>minutes</span>
+                        <button id="startFocusBtn" class="btn primary">Start Focus</button>
+                    </div>
+                    <div class="focus-progress">
+                        <div id="focusProgressBar" class="focus-progress-bar"></div>
+                    </div>
+                    <div id="focusMessage" class="focus-message"></div>
+                </div>
+            </section>
+
+            <!-- Notes Section -->
+            <section id="notes-section" class="section">
+                <div class="notes-header">
+                    <input type="text" id="newNoteInput" placeholder="Write a note..." class="note-input" maxlength="500">
+                    <button id="addNoteBtn" class="btn primary">+ Add Note</button>
+                </div>
+                <div id="notesList" class="notes-grid"></div>
+            </section>
+
+            <!-- Checklist Section -->
+            <section id="checklist-section" class="section">
+                <div class="checklist-header">
+                    <input type="text" id="newTaskInput" placeholder="New task..." class="task-input" maxlength="300">
+                    <button id="addTaskBtn" class="btn primary">+ Add Task</button>
+                </div>
+                <div id="tasksList" class="tasks-list"></div>
+            </section>
+
+            <!-- Challenges Section -->
+            <section id="challenges-section" class="section">
+                <div class="challenge-card" id="mysteryChallenge">
+                    <h3>🔮 Mystery Challenge</h3>
+                    <p id="mysteryText">Click to reveal today's mystery</p>
+                    <button id="revealMysteryBtn" class="btn">Reveal</button>
+                </div>
+                <div class="challenge-card" id="decodeChallenge">
+                    <h3>📜 Decode</h3>
+                    <p id="decodeText">Click to decode the message</p>
+                    <button id="revealDecodeBtn" class="btn">Decode</button>
+                </div>
+                <div class="challenge-card" id="quizChallenge">
+                    <h3>❓ Daily Quiz</h3>
+                    <p id="quizQuestion">Loading...</p>
+                    <div id="quizOptions"></div>
+                </div>
+            </section>
+
+            <!-- Countdowns Section -->
+            <section id="countdowns-section" class="section">
+                <div class="countdown-header">
+                    <input type="text" id="eventName" placeholder="Event name..." class="countdown-input" maxlength="100">
+                    <input type="date" id="eventDate" class="countdown-date">
+                    <button id="addCountdownBtn" class="btn primary">Add Countdown</button>
+                </div>
+                <div id="countdownsList" class="countdowns-grid"></div>
+            </section>
+        </main>
+
+        <!-- Customize Modal -->
+        <div id="customizeModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🎨 Customize Clock</h3>
+                    <button class="modal-close" id="closeCustomize">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="customize-section">
+                        <label>Background Color</label>
+                        <input type="color" id="bgColorPicker" value="#ffffff">
+                        <button id="applyBgColor" class="btn-small">Apply</button>
+                    </div>
+                    <div class="customize-section">
+                        <label>Background Image</label>
+                        <input type="text" id="unsplashQuery" placeholder="Search (e.g., mountains, forest, ocean)" class="custom-input">
+                        <button id="applyUnsplash" class="btn-small">Apply Image</button>
+                        <small style="color:var(--text-tertiary);font-size:11px;width:100%;">Uses Picsum Photos (free, no API key needed)</small>
+                    </div>
+                    <div class="customize-section">
+                        <label>Text Color</label>
+                        <input type="color" id="textColorPicker" value="#1a1a2e">
+                        <button id="applyTextColor" class="btn-small">Apply</button>
+                    </div>
+                    <div class="customize-section">
+                        <label>Clock Size</label>
+                        <select id="clockSizeSelect" class="custom-select">
+                            <option value="48px">Small (48px)</option>
+                            <option value="64px" selected>Medium (64px)</option>
+                            <option value="80px">Large (80px)</option>
+                            <option value="100px">Extra Large (100px)</option>
+                        </select>
+                        <button id="applyClockSize" class="btn-small">Apply</button>
+                    </div>
+                    <div class="customize-section">
+                        <button id="resetCustomization" class="btn-small" style="width:100%;">🔄 Reset All Customizations</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio elements with fallback handling -->
+    <audio id="bellSound" preload="auto" crossorigin="anonymous"></audio>
+    <audio id="chimeSound" preload="auto" crossorigin="anonymous"></audio>
+    <audio id="alertSound" preload="auto" crossorigin="anonymous"></audio>
+    <audio id="rainSound" loop crossorigin="anonymous"></audio>
+    <audio id="fireSound" loop crossorigin="anonymous"></audio>
+    <audio id="wavesSound" loop crossorigin="anonymous"></audio>
+    <audio id="windSound" loop crossorigin="anonymous"></audio>
+
+    <script>
+    (function() {
+        // ==================== SAFE LOCAL STORAGE ====================
+        function safeGet(key, fallback) {
+            try {
+                const val = localStorage.getItem(key);
+                if (val === null || val === undefined) return fallback;
+                return JSON.parse(val);
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        function safeSet(key, value) {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch (e) {
+                showToast('⚠️ Storage full. Please clear some data.');
+            }
+        }
+
+        // ==================== TOAST NOTIFICATION ====================
+        function showToast(message, duration = 2500) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // ==================== AUDIO SETUP WITH FALLBACKS ====================
+        const audioUrls = {
+            bell: 'https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-928.mp3',
+            chime: 'https://assets.mixkit.co/sfx/preview/mixkit-soft-gong-sound-1906.mp3',
+            alert: 'https://assets.mixkit.co/sfx/preview/mixkit-warning-alarm-buzzer-991.mp3',
+            rain: 'https://cdn.pixabay.com/audio/2022/03/10/audio_1d4b6e0c8e.mp3',
+            fire: 'https://cdn.pixabay.com/audio/2022/03/10/audio_a91e5c8e7c.mp3',
+            waves: 'https://cdn.pixabay.com/audio/2022/03/15/audio_c8e8d7a4e5.mp3',
+            wind: 'https://cdn.pixabay.com/audio/2022/03/15/audio_9b0e7f6a3d.mp3'
+        };
+
+        // Fallback: generate simple tones using Web Audio API if external files fail
+        function createFallbackTone(type) {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            gain.gain.value = 0.15;
+            switch (type) {
+                case 'bell':
+                    osc.frequency.value = 800;
+                    osc.type = 'sine';
+                    break;
+                case 'chime':
+                    osc.frequency.value = 523;
+                    osc.type = 'triangle';
+                    break;
+                case 'alert':
+                    osc.frequency.value = 440;
+                    osc.type = 'square';
+                    break;
+                default:
+                    osc.frequency.value = 600;
+                    osc.type = 'sine';
+            }
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
+            osc.stop(ctx.currentTime + 1.5);
+        }
+
+        function setupAudioElement(id, type) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.src = audioUrls[type] || '';
+            el.onerror = function() {
+                // Silently handle - will use fallback tone when played
+                el.dataset.broken = 'true';
+            };
+        }
+
+        setupAudioElement('bellSound', 'bell');
+        setupAudioElement('chimeSound', 'chime');
+        setupAudioElement('alertSound', 'alert');
+        setupAudioElement('rainSound', 'rain');
+        setupAudioElement('fireSound', 'fire');
+        setupAudioElement('wavesSound', 'waves');
+        setupAudioElement('windSound', 'wind');
+
+        function playSound(type) {
+            const soundMap = {
+                bell: document.getElementById('bellSound'),
+                chime: document.getElementById('chimeSound'),
+                alert: document.getElementById('alertSound')
+            };
+            const sound = soundMap[type];
+            if (sound && !sound.dataset.broken) {
+                sound.currentTime = 0;
+                sound.play().catch(() => createFallbackTone(type));
+            } else {
+                createFallbackTone(type);
+            }
+        }
+
+        function playAmbientSound(soundType) {
+            const ambientMap = {
+                rain: document.getElementById('rainSound'),
+                fire: document.getElementById('fireSound'),
+                waves: document.getElementById('wavesSound'),
+                wind: document.getElementById('windSound')
+            };
+            const sound = ambientMap[soundType];
+            if (sound && !sound.dataset.broken) {
+                sound.loop = true;
+                sound.play().catch(() => {
+                    showToast('⚠️ Could not play ambient sound. Trying fallback...');
+                });
+            }
+        }
+
+        // ==================== STATE ====================
+        let showSeconds = true;
+        let is24Hour = true;
+        let swTime = 0,
+            swInterval = null,
+            laps = [];
+        let timerSec = 1500,
+            timerInterval = null;
+        let alarms = safeGet('alarms', []);
+        let alarmCheckerInterval = null;
+        let firedAlarmsToday = safeGet('firedAlarmsToday', {});
+        let focusInterval = null;
+        let focusSeconds = 0;
+        let totalFocusMins = safeGet('totalFocusMins', 0);
+        let treeCount = safeGet('treeCount', 0);
+        let currentTrack = 0;
+        let musicPlaying = false;
+        let currentAudio = null;
+        let activeAmbient = null;
+        const ambientSounds = {
+            rain: document.getElementById('rainSound'),
+            fire: document.getElementById('fireSound'),
+            waves: document.getElementById('wavesSound'),
+            wind: document.getElementById('windSound')
+        };
+
+        const tracks = [
+            { name: 'Lofi Beats', artist: 'Chillhop Music',
+                url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+            { name: 'Classical Piano', artist: 'Mozart',
+                url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
+            { name: 'Jazz Cafe', artist: 'Jazz Lounge',
+                url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
+            { name: 'Nature Sounds', artist: 'Forest',
+            url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' }
+        ];
+
+        let worldCities = safeGet('worldCities', [
+            { name: 'Local', tz: Intl.DateTimeFormat().resolvedOptions().timeZone },
+            { name: 'London', tz: 'Europe/London' },
+            { name: 'New York', tz: 'America/New_York' }
+        ]);
+        let notes = safeGet('notes', []);
+        let tasks = safeGet('tasks', []);
+        let countdowns = safeGet('countdowns', []);
+
+        const mysteries = [
+            'The clock that shows the same time twice a day is broken — unless it\'s a ___.',
+            'What has hands but cannot clap?',
+            'What runs but never walks?'
+        ];
+        const mysteryAnswers = ['analog clock', 'a clock', 'time'];
+        const decodes = [
+            'Uif rvjdl cspxo gpy kvnqt pwfs uif mbaz epg',
+            'L fdq vhh wkh i xwxuh',
+            'Wlph lv pb ehvw iulhqg'
+        ];
+        const decodedMessages = [
+            'The quick brown fox jumps over the lazy dog',
+            'I can see the future',
+            'Time is my best friend'
+        ];
+        const quizPool = [
+            { question: 'What is the capital of France?', options: ['London', 'Berlin', 'Paris', 'Madrid'],
+                answer: 2 },
+            { question: 'How many seconds are in 5 minutes?', options: ['60', '120', '300', '500'], answer: 2 },
+            { question: 'Which planet is closest to the Sun?', options: ['Venus', 'Mercury', 'Earth', 'Mars'],
+                answer: 1 },
+            { question: 'What is 12 × 12?', options: ['120', '144', '132', '156'], answer: 1 },
+            { question: 'Who painted the Mona Lisa?', options: ['Van Gogh', 'Picasso', 'Da Vinci',
+                'Michelangelo'], answer: 2 }
+        ];
+        let currentQuiz = quizPool[Math.floor(Math.random() * quizPool.length)];
+
+        // ==================== ESCAPE HTML ====================
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>"']/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                if (m === '"') return '&quot;';
+                if (m === "'") return '&#39;';
+                return m;
+            });
+        }
+
+        // ==================== NAVIGATION ====================
+        let currentSection = 'clock';
+        const allIntervals = [];
+
+        function clearAllIntervals() {
+            allIntervals.forEach(id => clearInterval(id));
+            allIntervals.length = 0;
+        }
+
+        function registerInterval(id) {
+            allIntervals.push(id);
+        }
+
+        function switchSection(sectionName) {
+            // Clean up section-specific intervals
+            if (currentSection === 'stopwatch' && swInterval) {
+                // Keep stopwatch running in background - don't clear
+            }
+            if (currentSection === 'timer' && timerInterval) {
+                // Keep timer running in background
+            }
+            if (currentSection === 'focus' && focusInterval) {
+                // Keep focus running in background
+            }
+            if (currentSection === 'ambient' && activeAmbient) {
+                stopAllAmbient();
+            }
+            if (currentSection === 'music' && currentAudio && musicPlaying) {
+                // Keep music playing in background
+            }
+
+            currentSection = sectionName;
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+
+            const navBtn = document.querySelector(`[data-section="${sectionName}"]`);
+            if (navBtn) navBtn.classList.add('active');
+            const sectionEl = document.getElementById(`${sectionName}-section`);
+            if (sectionEl) sectionEl.classList.add('active');
+        }
+
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                switchSection(btn.dataset.section);
+            });
+        });
+
+        // ==================== CLOCK ====================
+        function updateDigitalClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            let seconds = now.getSeconds();
+            let ampm = '';
+            if (!is24Hour) {
+                ampm = hours >= 12 ? ' PM' : ' AM';
+                hours = hours % 12 || 12;
+            }
+            let timeStr;
+            if (showSeconds) {
+                timeStr =
+                    `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+            } else {
+                timeStr = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}`;
+            }
+            timeStr += !is24Hour ? ampm : '';
+            document.getElementById('digitalClock').textContent = timeStr;
+            document.getElementById('dateDisplay').textContent = now.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        const clockInterval = setInterval(updateDigitalClock, 1000);
+        registerInterval(clockInterval);
+        updateDigitalClock();
+
+        document.getElementById('toggleSeconds').addEventListener('click', () => {
+            showSeconds = !showSeconds;
+            document.getElementById('toggleSeconds').textContent = showSeconds ? 'Hide Seconds' :
+            'Show Seconds';
+        });
+        document.getElementById('toggleFormat').addEventListener('click', () => {
+            is24Hour = !is24Hour;
+            document.getElementById('toggleFormat').textContent = is24Hour ? 'Switch to 12H' :
+            'Switch to 24H';
+            updateDigitalClock();
+        });
+
+        // ==================== WORLD CLOCK ====================
+        function populateTimezoneSelect() {
+            const select = document.getElementById('timezoneSelect');
+            select.innerHTML = '';
+            try {
+                if (typeof Intl.supportedValuesOf === 'function') {
+                    const timezones = Intl.supportedValuesOf('timeZone');
+                    timezones.forEach(tz => {
+                        const option = document.createElement('option');
+                        option.value = tz;
+                        option.textContent = tz.replace(/_/g, ' ');
+                        select.appendChild(option);
+                    });
+                } else {
+                    throw new Error('supportedValuesOf not available');
+                }
+            } catch (e) {
+                ['UTC', 'America/New_York', 'Europe/London', 'Europe/Paris', 'Asia/Tokyo', 'Asia/Kolkata',
+                    'Australia/Sydney', 'Pacific/Auckland'
+                ].forEach(tz => {
+                    const option = document.createElement('option');
+                    option.value = tz;
+                    option.textContent = tz.replace(/_/g, ' ');
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        function getTimeInTz(tz) {
+            try {
+                return new Date().toLocaleTimeString('en-US', {
+                    timeZone: tz,
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            } catch (e) {
+                return '--:--:--';
+            }
+        }
+
+        function renderWorldClocks() {
+            const container = document.getElementById('worldClocksList');
+            if (!worldCities.length) {
+                container.innerHTML =
+                    '<div class="weather-placeholder" style="text-align:center;padding:40px;">No cities added. Search above!</div>';
+                return;
+            }
+            container.innerHTML = worldCities.map((city, idx) => `
+                    <div class="world-clock-card">
+                        <div class="world-city">🌍 ${escapeHtml(city.name)}</div>
+                        <div class="world-time">${getTimeInTz(city.tz)}</div>
+                        <button class="remove-city" data-idx="${idx}">Remove</button>
+                    </div>
+                `).join('');
+            container.querySelectorAll('.remove-city').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.dataset.idx);
+                    worldCities.splice(idx, 1);
+                    safeSet('worldCities', worldCities);
+                    renderWorldClocks();
+                });
+            });
+        }
+
+        document.getElementById('addTimezoneBtn').addEventListener('click', () => {
+            const select = document.getElementById('timezoneSelect');
+            const tz = select.value;
+            const name = tz.split('/').pop().replace(/_/g, ' ');
+            if (!worldCities.some(c => c.tz === tz)) {
+                worldCities.push({ name: name, tz: tz });
+                safeSet('worldCities', worldCities);
+                renderWorldClocks();
+                showToast('✅ City added!');
+            } else {
+                showToast('⚠️ City already added!');
+            }
+        });
+
+        populateTimezoneSelect();
+        renderWorldClocks();
+        const worldClockInterval = setInterval(renderWorldClocks, 1000);
+        registerInterval(worldClockInterval);
+
+        // ==================== STOPWATCH ====================
+        function updateStopwatch() {
+            const h = Math.floor(swTime / 3600);
+            const m = Math.floor((swTime % 3600) / 60);
+            const s = swTime % 60;
+            document.getElementById('stopwatchDisplay').textContent =
+                `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+
+        document.getElementById('swStart').onclick = () => {
+            if (swInterval) return;
+            swInterval = setInterval(() => { swTime++;
+                updateStopwatch(); }, 1000);
+            registerInterval(swInterval);
+        };
+        document.getElementById('swPause').onclick = () => {
+            clearInterval(swInterval);
+            swInterval = null;
+        };
+        document.getElementById('swReset').onclick = () => {
+            clearInterval(swInterval);
+            swInterval = null;
+            swTime = 0;
+            laps = [];
+            updateStopwatch();
+            document.getElementById('lapsList').innerHTML = '';
+        };
+        document.getElementById('swLap').onclick = () => {
+            if (swTime === 0) return;
+            const h = Math.floor(swTime / 3600);
+            const m = Math.floor((swTime % 3600) / 60);
+            const s = swTime % 60;
+            const lapTime =
+                `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            laps.push(lapTime);
+            document.getElementById('lapsList').innerHTML = laps.map((l, i) =>
+                `<div class="lap-item"><span>Lap ${i+1}</span><span>${l}</span></div>`
+            ).reverse().join('');
+        };
+
+        // ==================== TIMER ====================
+        function updateTimer() {
+            const m = Math.floor(timerSec / 60);
+            const s = timerSec % 60;
+            document.getElementById('timerDisplay').textContent =
+                `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            if (timerSec === 0 && timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                playSound('bell');
+                showToast('⏰ Timer is up!');
+            }
+        }
+
+        function syncTimerInputs() {
+            const m = Math.floor(timerSec / 60);
+            const s = timerSec % 60;
+            document.getElementById('timerMinutes').value = m;
+            document.getElementById('timerSeconds').value = s;
+        }
+
+        document.getElementById('timerStart').onclick = () => {
+            if (timerInterval) return;
+            if (timerSec <= 0) {
+                showToast('⚠️ Please set a time greater than 0');
+                return;
+            }
+            timerInterval = setInterval(() => { if (timerSec > 0) { timerSec--;
+                    updateTimer(); } else { clearInterval(timerInterval);
+                    timerInterval = null; } }, 1000);
+            registerInterval(timerInterval);
+        };
+        document.getElementById('timerPause').onclick = () => {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        };
+        document.getElementById('timerReset').onclick = () => {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            const min = parseInt(document.getElementById('timerMinutes').value) || 0;
+            const sec = parseInt(document.getElementById('timerSeconds').value) || 0;
+            timerSec = Math.max(0, (min * 60) + sec);
+            updateTimer();
+        };
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.onclick = () => {
+                const min = parseInt(btn.dataset.min);
+                document.getElementById('timerMinutes').value = min;
+                document.getElementById('timerSeconds').value = 0;
+                timerSec = min * 60;
+                updateTimer();
+            };
+        });
+        // Sync timer inputs when manually changed
+        document.getElementById('timerMinutes').addEventListener('change', function() {
+            const min = Math.max(0, parseInt(this.value) || 0);
+            const sec = Math.max(0, Math.min(59, parseInt(document.getElementById(
+            'timerSeconds').value) || 0));
+            timerSec = (min * 60) + sec;
+            updateTimer();
+            this.value = min;
+        });
+        document.getElementById('timerSeconds').addEventListener('change', function() {
+            const sec = Math.max(0, Math.min(59, parseInt(this.value) || 0));
+            const min = Math.max(0, parseInt(document.getElementById('timerMinutes').value) || 0);
+            timerSec = (min * 60) + sec;
+            updateTimer();
+            this.value = sec;
+        });
+
+        // ==================== ALARMS ====================
+        function renderAlarms() {
+            const container = document.getElementById('alarmsList');
+            if (!alarms.length) {
+                container.innerHTML =
+                    '<div class="weather-placeholder" style="text-align:center;padding:20px;">No alarms set</div>';
+                return;
+            }
+            container.innerHTML = alarms.map((alarm, idx) => `
+                    <div class="alarm-item">
+                        <span class="alarm-time">⏰ ${escapeHtml(alarm.time)}</span>
+                        <span class="alarm-sound">${escapeHtml(alarm.sound)}</span>
+                        <button class="delete-alarm" data-idx="${idx}">Delete</button>
+                    </div>
+                `).join('');
+            container.querySelectorAll('.delete-alarm').forEach(btn => {
+                btn.onclick = () => {
+                    const idx = parseInt(btn.dataset.idx);
+                    alarms.splice(idx, 1);
+                    safeSet('alarms', alarms);
+                    renderAlarms();
+                };
+            });
+        }
+
+        function startAlarmChecker() {
+            if (alarmCheckerInterval) clearInterval(alarmCheckerInterval);
+            alarmCheckerInterval = setInterval(() => {
+                const now = new Date();
+                const today = now.toDateString();
+                const currentTime =
+                    `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+                // Reset fired alarms for a new day
+                if (!firedAlarmsToday.date || firedAlarmsToday.date !== today) {
+                    firedAlarmsToday = { date: today, times: {} };
+                    safeSet('firedAlarmsToday', firedAlarmsToday);
+                    // Re-enable all alarms for the new day
+                    alarms.forEach(a => a.enabled = true);
+                    safeSet('alarms', alarms);
+                    renderAlarms();
+                }
+
+                alarms.forEach((alarm, idx) => {
+                    if (alarm.enabled && alarm.time === currentTime && !firedAlarmsToday.times[
+                            alarm.time]) {
+                        playSound(alarm.sound);
+                        firedAlarmsToday.times[alarm.time] = true;
+                        safeSet('firedAlarmsToday', firedAlarmsToday);
+                        alarm.enabled = false;
+                        safeSet('alarms', alarms);
+                        renderAlarms();
+                        showToast(`🔔 Alarm! ${alarm.time}`);
+                    }
+                });
+            }, 1000);
+            registerInterval(alarmCheckerInterval);
+        }
+
+        document.getElementById('setAlarmBtn').onclick = () => {
+            const time = document.getElementById('alarmTime').value;
+            const sound = document.getElementById('alarmSound').value;
+            if (!time) {
+                showToast('⚠️ Please select a time');
+                return;
+            }
+            if (alarms.some(a => a.time === time)) {
+                showToast('⚠️ Alarm already set for this time!');
+                return;
+            }
+            alarms.push({ time: time, sound: sound, enabled: true });
+            safeSet('alarms', alarms);
+            renderAlarms();
+            showToast('✅ Alarm set!');
+            document.getElementById('alarmTime').value = '07:00';
+        };
+
+        renderAlarms();
+        startAlarmChecker();
+
+        // ==================== WEATHER ====================
+        document.getElementById('getWeatherBtn').onclick = async () => {
+            const city = document.getElementById('weatherCity').value.trim();
+            if (!city) {
+                showToast('⚠️ Please enter a city name');
+                return;
+            }
+            const weatherInfo = document.getElementById('weatherInfo');
+            weatherInfo.innerHTML =
+            '<div class="weather-placeholder">⏳ Loading weather data...</div>';
+            try {
+                const response = await fetch(
+                    `https://wttr.in/${encodeURIComponent(city)}?format=%C|%t|%w|%h&lang=en`);
+                if (!response.ok) throw new Error('Weather service error');
+                const text = await response.text();
+                const parts = text.split('|');
+                const condition = parts[0]?.trim() || 'Unknown';
+                const temp = parts[1]?.trim() || 'N/A';
+                const wind = parts[2]?.trim() || 'N/A';
+                const humidity = parts[3]?.trim() || 'N/A';
+                weatherInfo.innerHTML = `
+                        <div class="weather-temp">${escapeHtml(temp)}</div>
+                        <div class="weather-condition">${escapeHtml(condition)}</div>
+                        <div class="weather-condition">💨 Wind: ${escapeHtml(wind)} | 💧 Humidity: ${escapeHtml(humidity)}</div>
+                    `;
+            } catch (e) {
+                weatherInfo.innerHTML =
+                    '<div class="weather-placeholder">⚠️ Weather service unavailable. Please try again later.</div>';
+            }
+        };
+
+        // ==================== MUSIC ====================
+        function loadTrack(index) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.src = '';
+                currentAudio = null;
+            }
+            currentAudio = new Audio(tracks[index].url);
+            currentAudio.loop = true;
+            currentAudio.volume = document.getElementById('musicVolume').value / 100;
+            currentAudio.onerror = () => {
+                showToast('⚠️ Could not load track. It may be unavailable.');
+            };
+            document.getElementById('currentTrack').textContent = tracks[index].name;
+            document.getElementById('trackArtist').textContent = tracks[index].artist;
+            if (musicPlaying) {
+                currentAudio.play().catch(() => {
+                    showToast('⚠️ Playback failed. Click play to try again.');
+                    musicPlaying = false;
+                    document.getElementById('playPauseMusic').textContent = '▶';
+                });
+            }
+        }
+
+        document.getElementById('playPauseMusic').onclick = () => {
+            if (!currentAudio) loadTrack(currentTrack);
+            if (musicPlaying) {
+                currentAudio.pause();
+                document.getElementById('playPauseMusic').textContent = '▶';
+                musicPlaying = false;
+            } else {
+                currentAudio.play().catch(() => {
+                    showToast('⚠️ Playback failed. Try another track.');
+                    return;
+                });
+                document.getElementById('playPauseMusic').textContent = '⏸';
+                musicPlaying = true;
+            }
+        };
+        document.getElementById('nextTrack').onclick = () => {
+            currentTrack = (currentTrack + 1) % tracks.length;
+            loadTrack(currentTrack);
+            if (musicPlaying && currentAudio) currentAudio.play().catch(() => {});
+        };
+        document.getElementById('prevTrack').onclick = () => {
+            currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
+            loadTrack(currentTrack);
+            if (musicPlaying && currentAudio) currentAudio.play().catch(() => {});
+        };
+        document.getElementById('musicVolume').oninput = (e) => {
+            if (currentAudio) currentAudio.volume = e.target.value / 100;
+        };
+        document.querySelectorAll('.playlist-item').forEach((item, idx) => {
+            item.onclick = () => {
+                currentTrack = idx;
+                loadTrack(currentTrack);
+                if (musicPlaying && currentAudio) currentAudio.play().catch(() => {});
+            };
+        });
+
+        // ==================== AMBIENT ====================
+        function stopAllAmbient() {
+            Object.values(ambientSounds).forEach(sound => {
+                sound.pause();
+                sound.currentTime = 0;
+            });
+            activeAmbient = null;
+            document.getElementById('ambientStatus').textContent = 'No ambient sound playing';
+            document.querySelectorAll('.ambient-play').forEach(b => b.textContent = 'Play');
+        }
+
+        document.querySelectorAll('.ambient-play').forEach(btn => {
+            btn.onclick = (e) => {
+                const card = btn.closest('.ambient-card');
+                const soundType = card.dataset.sound;
+                const sound = ambientSounds[soundType];
+                if (activeAmbient === soundType) {
+                    sound.pause();
+                    sound.currentTime = 0;
+                    activeAmbient = null;
+                    document.getElementById('ambientStatus').textContent =
+                        'No ambient sound playing';
+                    btn.textContent = 'Play';
+                } else {
+                    stopAllAmbient();
+                    sound.loop = true;
+                    playAmbientSound(soundType);
+                    activeAmbient = soundType;
+                    document.getElementById('ambientStatus').textContent =
+                        `🎵 Playing: ${soundType}`;
+                    document.querySelectorAll('.ambient-play').forEach(b => b.textContent =
+                        'Play');
+                    btn.textContent = 'Stop';
+                }
+            };
+        });
+
+        // ==================== FOCUS ====================
+        function updateFocusDisplay() {
+            document.getElementById('treeCount').textContent = treeCount;
+            document.getElementById('totalFocusMins').textContent = totalFocusMins;
+        }
+
+        function addTree() {
+            treeCount++;
+            safeSet('treeCount', treeCount);
+            updateFocusDisplay();
+            document.getElementById('focusMessage').textContent = '🌲 Great job! You grew a tree!';
+            setTimeout(() => {
+                if (document.getElementById('focusMessage').textContent ===
+                    '🌲 Great job! You grew a tree!') {
+                    document.getElementById('focusMessage').textContent = '';
+                }
+            }, 4000);
+        }
+
+        document.getElementById('startFocusBtn').onclick = () => {
+            if (focusInterval) {
+                clearInterval(focusInterval);
+                focusInterval = null;
+                document.getElementById('startFocusBtn').textContent = 'Start Focus';
+                document.getElementById('focusMessage').textContent = 'Focus session ended';
+                document.getElementById('focusProgressBar').style.width = '0%';
+                return;
+            }
+            const minutes = Math.max(1, parseInt(document.getElementById('focusMinutes').value) || 25);
+            focusSeconds = minutes * 60;
+            const totalSeconds = focusSeconds;
+            document.getElementById('focusMessage').textContent =
+                '🌲 Stay focused! You will grow a tree when done.';
+            focusInterval = setInterval(() => {
+                if (focusSeconds > 0) {
+                    focusSeconds--;
+                    const progress = ((totalSeconds - focusSeconds) / totalSeconds) * 100;
+                    document.getElementById('focusProgressBar').style.width = `${progress}%`;
+                    document.getElementById('startFocusBtn').textContent =
+                        `Focusing... ${Math.floor(focusSeconds/60)}:${String(focusSeconds%60).padStart(2,'0')}`;
+                } else {
+                    clearInterval(focusInterval);
+                    focusInterval = null;
+                    totalFocusMins += minutes;
+                    safeSet('totalFocusMins', totalFocusMins);
+                    addTree();
+                    updateFocusDisplay();
+                    document.getElementById('startFocusBtn').textContent = 'Start Focus';
+                    document.getElementById('focusProgressBar').style.width = '0%';
+                    playSound('chime');
+                    showToast('🎉 Focus session completed! You grew a tree!');
+                }
+            }, 1000);
+            registerInterval(focusInterval);
+        };
+
+        updateFocusDisplay();
+
+        // ==================== NOTES ====================
+        function renderNotes() {
+            const container = document.getElementById('notesList');
+            if (!notes.length) {
+                container.innerHTML =
+                    '<div class="weather-placeholder" style="text-align:center;padding:40px;">No notes yet. Add one above!</div>';
+                return;
+            }
+            container.innerHTML = notes.map((note, idx) => `
+                    <div class="note-card">
+                        <div class="note-text">${escapeHtml(note)}</div>
+                        <button class="delete-note" data-idx="${idx}">Delete</button>
+                    </div>
+                `).join('');
+            container.querySelectorAll('.delete-note').forEach(btn => {
+                btn.onclick = () => {
+                    const idx = parseInt(btn.dataset.idx);
+                    notes.splice(idx, 1);
+                    safeSet('notes', notes);
+                    renderNotes();
+                };
+            });
+        }
+
+        document.getElementById('addNoteBtn').onclick = () => {
+            const text = document.getElementById('newNoteInput').value.trim();
+            if (text) {
+                notes.push(text);
+                safeSet('notes', notes);
+                renderNotes();
+                document.getElementById('newNoteInput').value = '';
+                showToast('✅ Note added!');
+            }
+        };
+        document.getElementById('newNoteInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('addNoteBtn').click();
+        });
+        renderNotes();
+
+        // ==================== CHECKLIST ====================
+        function renderTasks() {
+            const container = document.getElementById('tasksList');
+            if (!tasks.length) {
+                container.innerHTML =
+                    '<div class="weather-placeholder" style="text-align:center;padding:40px;">No tasks yet. Add one above!</div>';
+                return;
+            }
+            container.innerHTML = tasks.map((task, idx) => `
+                    <div class="task-item">
+                        <input type="checkbox" class="task-checkbox" data-idx="${idx}" ${task.completed ? 'checked' : ''}>
+                        <span class="task-text ${task.completed ? 'completed' : ''}">${escapeHtml(task.text)}</span>
+                        <button class="delete-task" data-idx="${idx}">Delete</button>
+                    </div>
+                `).join('');
+            container.querySelectorAll('.task-checkbox').forEach(cb => {
+                cb.onclick = () => {
+                    const idx = parseInt(cb.dataset.idx);
+                    tasks[idx].completed = cb.checked;
+                    safeSet('tasks', tasks);
+                    renderTasks();
+                };
+            });
+            container.querySelectorAll('.delete-task').forEach(btn => {
+                btn.onclick = () => {
+                    const idx = parseInt(btn.dataset.idx);
+                    tasks.splice(idx, 1);
+                    safeSet('tasks', tasks);
+                    renderTasks();
+                };
+            });
+        }
+
+        document.getElementById('addTaskBtn').onclick = () => {
+            const text = document.getElementById('newTaskInput').value.trim();
+            if (text) {
+                tasks.push({ text: text, completed: false });
+                safeSet('tasks', tasks);
+                renderTasks();
+                document.getElementById('newTaskInput').value = '';
+                showToast('✅ Task added!');
+            }
+        };
+        document.getElementById('newTaskInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('addTaskBtn').click();
+        });
+        renderTasks();
+
+        // ==================== CHALLENGES ====================
+        document.getElementById('revealMysteryBtn').onclick = () => {
+            const dayIndex = new Date().getDate() % mysteries.length;
+            document.getElementById('mysteryText').textContent =
+                `${mysteries[dayIndex]} (Answer: ${mysteryAnswers[dayIndex]})`;
+        };
+        document.getElementById('revealDecodeBtn').onclick = () => {
+            const dayIndex = new Date().getDate() % decodes.length;
+            document.getElementById('decodeText').textContent =
+            `Decoded: ${decodedMessages[dayIndex]}`;
+        };
+
+        function loadQuiz() {
+            currentQuiz = quizPool[Math.floor(Math.random() * quizPool.length)];
+            document.getElementById('quizQuestion').textContent = currentQuiz.question;
+            const optionsDiv = document.getElementById('quizOptions');
+            optionsDiv.innerHTML = '';
+            currentQuiz.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.textContent = opt;
+                btn.className = 'quiz-option';
+                btn.onclick = () => {
+                    // Remove existing feedback
+                    const existingFeedback = optionsDiv.querySelector('.quiz-feedback');
+                    if (existingFeedback) existingFeedback.remove();
+                    const feedback = document.createElement('div');
+                    feedback.className = 'quiz-feedback';
+                    if (idx === currentQuiz.answer) {
+                        feedback.textContent = '✅ Correct! Great job!';
+                        feedback.style.color = '#10b981';
+                    } else {
+                        feedback.textContent =
+                            `❌ Wrong! The correct answer is: ${currentQuiz.options[currentQuiz.answer]}`;
+                        feedback.style.color = '#ef4444';
+                    }
+                    optionsDiv.appendChild(feedback);
+                    // Load new quiz after a delay
+                    setTimeout(() => {
+                        loadQuiz();
+                    }, 2000);
+                };
+                optionsDiv.appendChild(btn);
+            });
+        }
+        loadQuiz();
+
+        // ==================== COUNTDOWNS ====================
+        function renderCountdowns() {
+            const container = document.getElementById('countdownsList');
+            if (!countdowns.length) {
+                container.innerHTML =
+                    '<div class="weather-placeholder" style="text-align:center;padding:40px;">No countdowns yet. Add one above!</div>';
+                return;
+            }
+            const now = new Date();
+            container.innerHTML = countdowns.map((cd, idx) => {
+                const target = new Date(cd.date);
+                const diff = target - now;
+                if (diff <= 0) {
+                    return `
+                            <div class="countdown-card">
+                                <div class="countdown-name">🎉 ${escapeHtml(cd.name)}</div>
+                                <div class="countdown-timer">Event Passed!</div>
+                                <button class="delete-countdown" data-idx="${idx}">Delete</button>
+                            </div>
+                        `;
+                }
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                return `
+                        <div class="countdown-card">
+                            <div class="countdown-name">🎯 ${escapeHtml(cd.name)}</div>
+                            <div class="countdown-timer">${days}d ${hours}h ${minutes}m ${seconds}s</div>
+                            <button class="delete-countdown" data-idx="${idx}">Delete</button>
+                        </div>
+                    `;
+            }).join('');
+            container.querySelectorAll('.delete-countdown').forEach(btn => {
+                btn.onclick = () => {
+                    const idx = parseInt(btn.dataset.idx);
+                    countdowns.splice(idx, 1);
+                    safeSet('countdowns', countdowns);
+                    renderCountdowns();
+                };
+            });
+        }
+
+        document.getElementById('addCountdownBtn').onclick = () => {
+            const name = document.getElementById('eventName').value.trim();
+            const date = document.getElementById('eventDate').value;
+            if (name && date) {
+                const eventDate = new Date(date);
+                if (eventDate < new Date()) {
+                    showToast('⚠️ Please select a future date');
+                    return;
+                }
+                countdowns.push({ name: name, date: date });
+                safeSet('countdowns', countdowns);
+                renderCountdowns();
+                document.getElementById('eventName').value = '';
+                document.getElementById('eventDate').value = '';
+                showToast('✅ Countdown added!');
+            } else {
+                showToast('⚠️ Please enter both event name and date');
+            }
+        };
+
+        renderCountdowns();
+        const countdownInterval = setInterval(renderCountdowns, 1000);
+        registerInterval(countdownInterval);
+
+        // ==================== CUSTOMIZATION ====================
+        document.getElementById('customizeBtn').onclick = () => {
+            document.getElementById('customizeModal').classList.add('active');
+            // Load current values
+            const savedBgColor = safeGet('bgColor', '#ffffff');
+            document.getElementById('bgColorPicker').value = savedBgColor;
+            const savedTextColor = safeGet('textColor', '#1a1a2e');
+            document.getElementById('textColorPicker').value = savedTextColor;
+            const savedClockSize = safeGet('clockSize', '64px');
+            document.getElementById('clockSizeSelect').value = savedClockSize;
+        };
+
+        document.getElementById('closeCustomize').onclick = () => {
+            document.getElementById('customizeModal').classList.remove('active');
+        };
+
+        document.getElementById('applyBgColor').onclick = () => {
+            const color = document.getElementById('bgColorPicker').value;
+            document.body.style.background = color;
+            document.body.style.backgroundImage = 'none';
+            safeSet('bgColor', color);
+            localStorage.removeItem('bgImage');
+            document.getElementById('customizeModal').classList.remove('active');
+            showToast('✅ Background color applied!');
+        };
+
+        document.getElementById('applyTextColor').onclick = () => {
+            const color = document.getElementById('textColorPicker').value;
+            const elements = document.querySelectorAll(
+                '.digital-clock, .date-display, .section-header h2, .world-city, .alarm-time, .task-text, .note-text, .world-time, .countdown-name'
+                );
+            elements.forEach(el => el.style.color = color);
+            safeSet('textColor', color);
+            document.getElementById('customizeModal').classList.remove('active');
+            showToast('✅ Text color applied!');
+        };
+
+        document.getElementById('applyClockSize').onclick = () => {
+            const size = document.getElementById('clockSizeSelect').value;
+            document.getElementById('digitalClock').style.fontSize = size;
+            safeSet('clockSize', size);
+            document.getElementById('customizeModal').classList.remove('active');
+            showToast('✅ Clock size applied!');
+        };
+
+        document.getElementById('applyUnsplash').onclick = () => {
+            const query = document.getElementById('unsplashQuery').value.trim();
+            if (query) {
+                // Use Picsum Photos with seed for consistent results per query
+                const seed = query.replace(/\s+/g, '').toLowerCase();
+                const imageUrl = `https://picsum.photos/seed/${seed}/1920/1080`;
+                document.body.style.background = '';
+                document.body.style.backgroundImage = `url(${imageUrl})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+                document.body.style.backgroundRepeat = 'no-repeat';
+                document.body.style.backgroundAttachment = 'fixed';
+                safeSet('bgImage', imageUrl);
+                localStorage.removeItem('bgColor');
+                document.getElementById('customizeModal').classList.remove('active');
+                showToast('✅ Background image applied!');
+            } else {
+                showToast('⚠️ Please enter a search term');
+            }
+        };
+
+        document.getElementById('resetCustomization').onclick = () => {
+            localStorage.removeItem('bgColor');
+            localStorage.removeItem('bgImage');
+            localStorage.removeItem('textColor');
+            localStorage.removeItem('clockSize');
+            document.body.style.background = '#ffffff';
+            document.body.style.backgroundImage = 'none';
+            document.body.style.backgroundAttachment = 'scroll';
+            document.getElementById('digitalClock').style.fontSize = '64px';
+            const elements = document.querySelectorAll(
+                '.digital-clock, .date-display, .section-header h2, .world-city, .alarm-time, .task-text, .note-text, .world-time, .countdown-name'
+                );
+            elements.forEach(el => el.style.color = '');
+            document.getElementById('bgColorPicker').value = '#ffffff';
+            document.getElementById('textColorPicker').value = '#1a1a2e';
+            document.getElementById('clockSizeSelect').value = '64px';
+            document.getElementById('unsplashQuery').value = '';
+            document.getElementById('customizeModal').classList.remove('active');
+            showToast('🔄 All customizations reset!');
+        };
+
+        // Load saved customizations
+        function loadCustomizations() {
+            const savedBgImage = localStorage.getItem('bgImage');
+            const savedBgColor = safeGet('bgColor', null);
+
+            if (savedBgImage) {
+                document.body.style.background = '';
+                document.body.style.backgroundImage = `url(${savedBgImage})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+                document.body.style.backgroundRepeat = 'no-repeat';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else if (savedBgColor) {
+                document.body.style.background = savedBgColor;
+                document.body.style.backgroundImage = 'none';
+                document.body.style.backgroundAttachment = 'scroll';
+            } else {
+                document.body.style.background = '#ffffff';
+                document.body.style.backgroundImage = 'none';
+                document.body.style.backgroundAttachment = 'scroll';
+            }
+
+            const savedTextColor = safeGet('textColor', null);
+            if (savedTextColor) {
+                const elements = document.querySelectorAll(
+                    '.digital-clock, .date-display, .section-header h2, .world-city, .alarm-time, .task-text, .note-text, .world-time, .countdown-name'
+                    );
+                elements.forEach(el => el.style.color = savedTextColor);
+            }
+
+            const savedClockSize = safeGet('clockSize', null);
+            if (savedClockSize) {
+                document.getElementById('digitalClock').style.fontSize = savedClockSize;
+            }
+        }
+        loadCustomizations();
+
+        // Close modal on backdrop click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(m => m.classList.remove(
+                    'active'));
+            }
+        });
+
+        // ==================== INIT ====================
+        console.log('✅ Clockface Pro — Ready');
+        console.log('🕐 Features: Clock, World Clock, Stopwatch, Timer, Alarm, Weather, Music, Ambient, Focus, Notes, Checklist, Challenges, Countdowns');
+        console.log('🎨 Customization: Background color/image, text color, clock size');
+        console.log('💾 Data stored in localStorage for persistence');
+
+        // Initial timer display sync
+        updateTimer();
+        syncTimerInputs();
+
+    })();
+    </script>
+</body>
+</html>
